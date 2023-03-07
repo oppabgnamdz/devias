@@ -1,13 +1,13 @@
-# Use an official Node.js runtime as the base image
-FROM node:14-alpine
+# Use the official Node.js image as a base
+FROM node:14 AS build
 
-# Set the working directory to /app
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the package.json and package-lock.json files to the container
+# Copy package.json and package-lock.json to the container
 COPY package*.json ./
 
-# Install the dependencies
+# Install dependencies
 RUN npm install
 
 # Copy the rest of the application code to the container
@@ -16,8 +16,17 @@ COPY . .
 # Build the production version of the application
 RUN npm run build
 
-# Expose port 3000 for the application
-EXPOSE 3000
+# Create a new image with Nginx as the base
+FROM nginx:latest
 
-# Start the application when the container is started
-CMD ["npm", "start"]
+# Copy the production build files from the previous stage to the container
+COPY --from=build /app/out /usr/share/nginx/html
+
+# Copy the Nginx configuration file to the container
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
