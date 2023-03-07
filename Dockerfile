@@ -22,7 +22,7 @@ RUN npm run export
 FROM nginx:latest
 
 # Copy the production build files from the previous stage to the container
-COPY --from=out /app/out /usr/share/nginx/html
+COPY --from=build /app/out /usr/share/nginx/html
 
 # Copy the Nginx configuration file to the container
 COPY nginx.conf /etc/nginx/conf.d/default.conf
